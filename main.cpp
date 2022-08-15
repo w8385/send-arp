@@ -4,6 +4,7 @@
 #include "arphdr.h"
 #include <fstream>
 #include <iostream>
+#include <stdlib.h>
 using namespace std;
 
 #pragma pack(push, 1)
@@ -37,8 +38,15 @@ int main(int argc, char* argv[]) {
   	string MY_MAC((istreambuf_iterator<char>(iface)), istreambuf_iterator<char>());
   	cout << "System MAC Address is : " << MY_MAC;
   	
+	FILE *fp;
+	fp = popen("hostname -I | awk -F ' ' '{print $1}'", "r");
+	fgets(errbuf, PCAP_ERRBUF_SIZE, fp);
+	printf("My IP Address is : %s", errbuf);
+	pclose(fp);
+
   	Mac myMAC = (Mac)MY_MAC;
 	Mac senderMAC;
+	Ip myIP = Ip(errbuf);
 	Ip senderIP = Ip(argv[2]);
 	Ip targetIP = Ip(argv[3]);
 	
@@ -56,7 +64,7 @@ int main(int argc, char* argv[]) {
 	packet.arp_.op_ = htons(ArpHdr::Request);
 	packet.arp_.smac_ = myMAC;
 	packet.arp_.tmac_ = Mac("00:00:00:00:00:00");
-	packet.arp_.sip_ = htonl(Ip("8.8.8.8"));
+	packet.arp_.sip_ = htonl(myIP);
 	packet.arp_.tip_ = htonl(senderIP);
 
 	// broadcast

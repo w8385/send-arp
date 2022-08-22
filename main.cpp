@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdlib.h>
+#include <string.h>
 using namespace std;
 
 #pragma pack(push, 1)
@@ -39,7 +40,10 @@ int main(int argc, char* argv[]) {
   	cout << "System MAC Address is : " << MY_MAC;
   	
 	FILE *fp;
-	fp = popen("hostname -I | awk -F ' ' '{print $1}'", "r");
+	string get_ip_string = string("ifconfig ") + string(dev) + string(" | grep \"inet \" | awk -F ' ' '{print $2}'");
+	char get_ip[30];
+	strcpy(get_ip, get_ip_string.c_str());
+	fp = popen(get_ip, "r");
 	fgets(errbuf, PCAP_ERRBUF_SIZE, fp);
 	printf("My IP Address is : %s", errbuf);
 	pclose(fp);
@@ -104,12 +108,12 @@ int main(int argc, char* argv[]) {
 	
 	// Arp attack
 	printf("\nArp attck start ...\n");
-	while(1){
+//	while(1){
 		int res_arp = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthArpPacket));
 		if (res_arp != 0) {
 			fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res_arp, pcap_geterr(handle));
 		}
-	}
+//	}
 	
 	pcap_close(handle);
 }
